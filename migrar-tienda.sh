@@ -72,6 +72,34 @@ for d in "$HOME/Escritorio" "$HOME/Desktop"; do
   fi
 done
 
+# 6. Evitar la "pantalla en blanco" en algunas versiones de WebKitGTK: es un bug
+#    al dibujar la fuente de emojis a color (COLRv1). Rechazamos esa fuente a
+#    nivel de usuario (reversible borrando este archivo). No requiere sudo.
+say "Aplicando arreglo de compatibilidad (fuentes de color)…"
+mkdir -p "$HOME/.config/fontconfig/conf.d"
+cat > "$HOME/.config/fontconfig/conf.d/99-no-color-emoji.conf" <<'FC'
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "fonts.dtd">
+<fontconfig>
+  <selectfont><rejectfont><pattern>
+    <patelt name="family"><string>Noto Color Emoji</string></patelt>
+  </pattern></rejectfont></selectfont>
+</fontconfig>
+FC
+fc-cache -f >/dev/null 2>&1 || true
+
+# 7. Autoarranque: que la app abra sola al encender la PC.
+say "Configurando autoarranque…"
+mkdir -p "$HOME/.config/autostart"
+cat > "$HOME/.config/autostart/puntoventa.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=Punto de Venta
+Exec=$APPIMAGE_PATH
+X-GNOME-Autostart-enabled=true
+Terminal=false
+EOF
+
 say "¡Listo! 🎉"
 cat <<FIN
    • Busca 'Punto de Venta' en el menú de aplicaciones (o en el escritorio).
